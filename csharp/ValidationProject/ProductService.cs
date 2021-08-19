@@ -1,4 +1,6 @@
-﻿namespace Validation
+﻿using System;
+
+namespace Validation
 {
     internal class ProductService
     {
@@ -115,25 +117,8 @@
 
         private static Product CreateProduct(EnrichedProductFormData data)
         {
-            var result = new Product(data.Name);
-            switch (data.Type)
-            {
-                case "Eyeshadow":
-                    result = new Eyeshadow(data.Name);
-                    break;
-                case "Mascara":
-                    result = new Mascara(data.Name);
-                    break;
-                case "Lipstick":
-                    result = new Lipstick(data.Name);
-                    break;
-                case "Blusher":
-                    result = new Blusher(data.Name);
-                    break;
-                case "Foundation":
-                    result = new Foundation(data.Name);
-                    break;
-            }
+            var type = Type.GetType($"{typeof(Product).Namespace}.{data.Type}");
+            var result = (Product)Activator.CreateInstance(type, new object[] { data.Name });
 
             result.Range = data.Range;
             result.Weight = data.Weight;
