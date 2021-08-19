@@ -60,15 +60,15 @@ namespace Validation
                 result = (ProductRange.PROFESSIONAL);
             }
 
-            if ("Eyeshadow" == (productData.Type) && productData.Name.Contains("Queen"))
+            if (nameof(Eyeshadow) == (productData.Type) && productData.Name.Contains("Queen"))
             {
                 result = (ProductRange.QUEEN);
             }
-            else if ("Foundation" == (productData.Type) && productData.SuggestedPrice > 10)
+            else if (nameof(Foundation) == (productData.Type) && productData.SuggestedPrice > 10)
             {
                 result = (ProductRange.PROFESSIONAL);
             }
-            else if ("Lipstick" == (productData.Type))
+            else if (nameof(Lipstick) == (productData.Type))
             {
                 if (productData.SuggestedPrice > 10)
                 {
@@ -80,7 +80,7 @@ namespace Validation
                     result = (ProductRange.QUEEN);
                 }
             }
-            else if ("Mascara" == (productData.Type))
+            else if (nameof(Mascara) == (productData.Type))
             {
                 if (productData.SuggestedPrice > 15)
                 {
