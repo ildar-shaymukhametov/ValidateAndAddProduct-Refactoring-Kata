@@ -25,6 +25,51 @@
         }
     }
 
+    public class Eyeshadow : Product
+    {
+        public Eyeshadow(string name) : base(name)
+        {
+            Type = "Eyeshadow";
+            Family = ProductFamily.EYES;
+        }
+    }
+
+    public class Mascara : Product
+    {
+        public Mascara(string name) : base(name)
+        {
+            Type = "Mascara";
+            Family = ProductFamily.LASHES;
+        }
+    }
+
+    public class Lipstick : Product
+    {
+        public Lipstick(string name) : base(name)
+        {
+            Type = "Lipstick";
+            Family = ProductFamily.LIPS;
+        }
+    }
+
+    public class Blusher : Product
+    {
+        public Blusher(string name) : base(name)
+        {
+            Type = "Blusher";
+            Family = ProductFamily.SKIN;
+        }
+    }
+
+    public class Foundation : Product
+    {
+        public Foundation(string name) : base(name)
+        {
+            Type = "Foundation";
+            Family = ProductFamily.SKIN;
+        }
+    }
+
     public enum ProductRange
     {
         QUEEN,

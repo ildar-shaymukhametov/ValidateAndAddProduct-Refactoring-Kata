@@ -116,31 +116,27 @@
         private static Product CreateProduct(EnrichedProductFormData data)
         {
             var result = new Product(data.Name);
+            switch (data.Type)
+            {
+                case "Eyeshadow":
+                    result = new Eyeshadow(data.Name);
+                    break;
+                case "Mascara":
+                    result = new Mascara(data.Name);
+                    break;
+                case "Lipstick":
+                    result = new Lipstick(data.Name);
+                    break;
+                case "Blusher":
+                    result = new Blusher(data.Name);
+                    break;
+                case "Foundation":
+                    result = new Foundation(data.Name);
+                    break;
+            }
+
             result.Range = data.Range;
-            result.Weight = (data.Weight);
-
-            if ("Eyeshadow" == (data.Type) || "Mascara" == (data.Type))
-            {
-                result.Type = (data.Type);
-                result.Family = (ProductFamily.EYES);
-            }
-
-            if ("Lipstick" == (data.Type))
-            {
-                result.Type = (data.Type);
-                result.Family = (ProductFamily.LIPS);
-            }
-
-            if ("Mascara" == (data.Type))
-            {
-                result.Family = (ProductFamily.LASHES);
-            }
-
-            if ("Blusher" == (data.Type) || "Foundation" == (data.Type))
-            {
-                result.Type = (data.Type);
-                result.Family = (ProductFamily.SKIN);
-            }
+            result.Weight = data.Weight;
 
             return result;
         }
