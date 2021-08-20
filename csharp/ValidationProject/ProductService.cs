@@ -37,6 +37,11 @@
                 result = new Response(0, -3, "Error - weight too high");
             }
 
+            if ("Lipgloss" == (data.Type) && data.Weight > 20)
+            {
+                result = new Response(0, -3, "Error - weight too high");
+            }
+
             if ("Unknown" == (data.Type))
             {
                 result = new Response(0, -1, "Unknown product type " + data.Type);

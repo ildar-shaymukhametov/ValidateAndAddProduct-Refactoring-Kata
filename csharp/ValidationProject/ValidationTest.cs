@@ -240,6 +240,17 @@ namespace Validation
         }
 
         [Fact]
+        void Lipgloss_produces_error_if_weight_greater_than_20()
+        {
+            var weight = 20 + 1;
+
+            var actual = CreateSut().ValidateAndAdd(CreateLipglossData(weight));
+
+            var expected = new Response(0, -3, "Error - weight too high");
+            Assert.Equal(expected.ToString(), actual.ToString());
+        }
+
+        [Fact]
         void ValidateAndAdd() {
             // Arrange
             var productData = new ProductFormData("Sample product",
