@@ -70,6 +70,15 @@
         }
     }
 
+    public class Lipgloss : Product
+    {
+        public Lipgloss(string name) : base(name)
+        {
+            Type = "Lipgloss";
+            Family = ProductFamily.LIPS;
+        }
+    }
+
     public enum ProductRange
     {
         QUEEN,

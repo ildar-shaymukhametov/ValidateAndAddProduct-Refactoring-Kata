@@ -214,6 +214,43 @@ namespace Validation
         }
 
         [Fact]
+        void Lipgloss_is_saved_to_db()
+        {
+            var type = "Lipgloss";
+            var family = ProductFamily.LIPS;
+
+            var db = new FakeDatabase();
+            CreateSut(db).ValidateAndAdd(CreateData(type: type));
+            var actual = db.Product.ToString();
+
+            var expected = CreateProduct(type, family: family).ToString();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        void Lipgloss_with_price_greater_than_10_produces_error()
+        {
+            var price = 10 + 1;
+
+            var db = new FakeDatabase();
+            var actual = CreateSut(db).ValidateAndAdd(CreateLipglossData(suggestedPrice: price));
+
+            var expected = CreateFailedQualityCheckResponse();
+            Assert.Equal(expected.ToString(), actual.ToString());
+        }
+
+        [Fact]
+        void Lipgloss_produces_error_if_weight_greater_than_20()
+        {
+            var weight = 20 + 1;
+
+            var actual = CreateSut().ValidateAndAdd(CreateLipglossData(weight));
+
+            var expected = new Response(0, -3, "Error - weight too high");
+            Assert.Equal(expected.ToString(), actual.ToString());
+        }
+
+        [Fact]
         void ValidateAndAdd() {
             // Arrange
             var productData = new ProductFormData("Sample product",
@@ -297,6 +334,11 @@ namespace Validation
         private static ProductFormData CreateBlusherData(double? weight = null)
         {
             return CreateData(type: "Blusher", weight: weight);
+        }
+
+        private static ProductFormData CreateLipglossData(double? weight = null, double? suggestedPrice = null)
+        {
+            return CreateData(type: "Lipgloss", weight: weight, suggestedPrice: suggestedPrice);
         }
 
         private static Response CreateFailedQualityCheckResponse()

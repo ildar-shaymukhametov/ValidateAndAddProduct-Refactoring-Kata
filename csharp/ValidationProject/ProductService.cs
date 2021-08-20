@@ -23,6 +23,7 @@ namespace Validation
                 new Validator(x => "Blusher" == (x.Type) && x.Weight > 10 ? new Response(0, -3, "Error - weight too high") : null),
                 new Validator(x => "Unknown" == (x.Type) ? new Response(0, -1, "Unknown product type " + x.Type) : null),
                 new Validator(x => !x.PackagingRecyclable && x.Range == ProductRange.QUEEN ? new Response(0, -1, "Error - failed quality check for Queen Range") : null),
+                new Validator(x => "Lipgloss" == (x.Type) && x.Weight > 20 ? new Response(0, -3, "Error - weight too high") : null),
             };
             _rangeCalculators = new List<Func<ProductFormData, ProductRange?>>
             {
@@ -33,6 +34,7 @@ namespace Validation
                 new Func<ProductFormData, ProductRange?>(x => nameof(Mascara) == (x.Type) && x.SuggestedPrice > 15 && !x.PackagingRecyclable ? ProductRange.PROFESSIONAL : null),
                 new Func<ProductFormData, ProductRange?>(x => nameof(Mascara) == (x.Type) && x.SuggestedPrice > 25 && x.PackagingRecyclable ? ProductRange.QUEEN : null),
                 new Func<ProductFormData, ProductRange?>(x => x.PackagingRecyclable ? ProductRange.PROFESSIONAL : null),
+                new Func<ProductFormData, ProductRange?>(x => nameof(Lipgloss) == (x.Type) && x.SuggestedPrice > 10 ? ProductRange.QUEEN : null),
             };
         }
 
