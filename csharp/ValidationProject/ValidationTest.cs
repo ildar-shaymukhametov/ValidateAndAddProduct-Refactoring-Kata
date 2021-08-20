@@ -214,6 +214,20 @@ namespace Validation
         }
 
         [Fact]
+        void Lipgloss_is_saved_to_db()
+        {
+            var type = "Lipgloss";
+            var family = ProductFamily.LIPS;
+
+            var db = new FakeDatabase();
+            CreateSut(db).ValidateAndAdd(CreateData(type: type));
+            var actual = db.Product.ToString();
+
+            var expected = CreateProduct(type, family: family).ToString();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         void ValidateAndAdd() {
             // Arrange
             var productData = new ProductFormData("Sample product",

@@ -125,7 +125,7 @@
                 result.Family = (ProductFamily.EYES);
             }
 
-            if ("Lipstick" == (data.Type))
+            if ("Lipstick" == (data.Type) || "Lipgloss" == data.Type)
             {
                 result.Family = (ProductFamily.LIPS);
             }
