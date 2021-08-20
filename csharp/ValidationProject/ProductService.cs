@@ -1,10 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Validator = System.Func<Validation.EnrichedProductFormData, Validation.Response>;
 
 namespace Validation
 {
     internal class ProductService
     {
+        private static List<Func<EnrichedProductFormData, Response>> _validators;
         private readonly IDatabaseAccess _db;
+
+        static ProductService()
+        {
+            _validators = new List<Func<EnrichedProductFormData, Response>>()
+            {
+                new Validator(x => x.Name == "" ? new Response(0, -2, "Missing Name") : null),
+                new Validator(x => x.Type == "" ? new Response(0, -2, "Missing Type") : null),
+                new Validator(x => "Lipstick" == x.Type && x.SuggestedPrice > 20 && x.Weight > 0 && x.Weight < 10 ? new Response(0, -1, "Error - failed quality check for Queen Range") : null),
+                new Validator(x => x.Weight < 0 ? new Response(0, -3, "Weight error") : null),
+                new Validator(x => "Blusher" == (x.Type) && x.Weight > 10 ? new Response(0, -3, "Error - weight too high") : null),
+                new Validator(x => "Unknown" == (x.Type) ? new Response(0, -1, "Unknown product type " + x.Type) : null),
+                new Validator(x => !x.PackagingRecyclable && x.Range == ProductRange.QUEEN ? new Response(0, -1, "Error - failed quality check for Queen Range") : null),
+            };
+        }
 
         public ProductService(IDatabaseAccess db)
         {
@@ -13,43 +31,11 @@ namespace Validation
 
         private static Response Validate(EnrichedProductFormData data)
         {
-            var result = new Response(0, 0, null);
-            if ("" == (data.Name))
+            return _validators.Aggregate(default(Response), (acc, v) =>
             {
-                result = new Response(0, -2, "Missing Name");
-            }
-
-            if ("" == (data.Type))
-            {
-                result = new Response(0, -2, "Missing Type");
-            }
-
-            if ("Lipstick" == data.Type && data.SuggestedPrice > 20 && data.Weight > 0 && data.Weight < 10)
-            {
-                result = new Response(0, -1, "Error - failed quality check for Queen Range");
-            }
-
-            if (data.Weight < 0)
-            {
-                result = new Response(0, -3, "Weight error");
-            }
-
-            if ("Blusher" == (data.Type) && data.Weight > 10)
-            {
-                result = new Response(0, -3, "Error - weight too high");
-            }
-
-            if ("Unknown" == (data.Type))
-            {
-                result = new Response(0, -1, "Unknown product type " + data.Type);
-            }
-
-            if (!data.PackagingRecyclable && data.Range == ProductRange.QUEEN)
-            {
-                result = new Response(0, -1, "Error - failed quality check for Queen Range");
-            }
-
-            return result;
+                acc = acc?.StatusCode < 0 ? acc : v(data);
+                return acc;
+            });
         }
 
         private static ProductRange CalculateRange(ProductFormData productData)
@@ -100,7 +86,7 @@ namespace Validation
         {
             var data = EnrichData(productData);
             var response = Validate(data);
-            if (response.StatusCode != 0)
+            if (response != null && response.StatusCode != 0)
             {
                 return response;
             }
