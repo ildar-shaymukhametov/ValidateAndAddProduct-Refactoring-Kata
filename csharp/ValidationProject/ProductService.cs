@@ -38,21 +38,12 @@ namespace Validation
 
         private Response Validate(EnrichedProductFormData data)
         {
-            return _validators.Aggregate(default(Response), (acc, v) =>
-            {
-                acc = acc?.StatusCode < 0 ? acc : v(data);
-                return acc;
-            });
+            return _validators.Aggregate(default(Response), (acc, v) => acc ?? v(data));
         }
 
         private ProductRange CalculateRange(ProductFormData productData)
         {
-            var result = _rangeCalculators.Aggregate(default(ProductRange?), (acc, v) =>
-            {
-                acc = acc ?? v(productData);
-                return acc;
-            });
-
+            var result = _rangeCalculators.Aggregate(default(ProductRange?), (acc, v) => acc ?? v(productData));
             return result ?? ProductRange.BUDGET;
         }
 
