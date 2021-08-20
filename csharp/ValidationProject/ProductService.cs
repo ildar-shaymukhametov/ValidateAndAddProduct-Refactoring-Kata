@@ -7,11 +7,12 @@ namespace Validation
 {
     internal class ProductService
     {
-        private static List<Func<EnrichedProductFormData, Response>> _validators;
+        private readonly List<Func<EnrichedProductFormData, Response>> _validators;
         private readonly IDatabaseAccess _db;
 
-        static ProductService()
+        public ProductService(IDatabaseAccess db)
         {
+            _db = db;
             _validators = new List<Func<EnrichedProductFormData, Response>>()
             {
                 new Validator(x => x.Name == "" ? new Response(0, -2, "Missing Name") : null),
@@ -24,12 +25,7 @@ namespace Validation
             };
         }
 
-        public ProductService(IDatabaseAccess db)
-        {
-            _db = db;
-        }
-
-        private static Response Validate(EnrichedProductFormData data)
+        private Response Validate(EnrichedProductFormData data)
         {
             return _validators.Aggregate(default(Response), (acc, v) =>
             {
