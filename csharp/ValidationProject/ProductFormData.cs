@@ -17,4 +17,13 @@
             PackagingRecyclable = packagingRecyclable;
         }
     }
+
+    internal class EnrichedProductFormData : ProductFormData
+    {
+        public EnrichedProductFormData(ProductFormData data) : base(data.Name, data.Type, data.Weight, data.SuggestedPrice, data.PackagingRecyclable)
+        {
+        }
+
+        public ProductRange Range { get; set; }
+    }
 }

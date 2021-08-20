@@ -9,40 +9,40 @@
             _db = db;
         }
 
-        private static Response Validate(ProductFormData productData, ProductRange range)
+        private static Response Validate(EnrichedProductFormData data)
         {
             var result = new Response(0, 0, null);
-            if ("" == (productData.Name))
+            if ("" == (data.Name))
             {
                 result = new Response(0, -2, "Missing Name");
             }
 
-            if ("" == (productData.Type))
+            if ("" == (data.Type))
             {
                 result = new Response(0, -2, "Missing Type");
             }
 
-            if ("Lipstick" == productData.Type && productData.SuggestedPrice > 20 && productData.Weight > 0 && productData.Weight < 10)
+            if ("Lipstick" == data.Type && data.SuggestedPrice > 20 && data.Weight > 0 && data.Weight < 10)
             {
                 result = new Response(0, -1, "Error - failed quality check for Queen Range");
             }
 
-            if (productData.Weight < 0)
+            if (data.Weight < 0)
             {
                 result = new Response(0, -3, "Weight error");
             }
 
-            if ("Blusher" == (productData.Type) && productData.Weight > 10)
+            if ("Blusher" == (data.Type) && data.Weight > 10)
             {
                 result = new Response(0, -3, "Error - weight too high");
             }
 
-            if ("Unknown" == (productData.Type))
+            if ("Unknown" == (data.Type))
             {
-                result = new Response(0, -1, "Unknown product type " + productData.Type);
+                result = new Response(0, -1, "Unknown product type " + data.Type);
             }
 
-            if (!productData.PackagingRecyclable && range == ProductRange.QUEEN)
+            if (!data.PackagingRecyclable && data.Range == ProductRange.QUEEN)
             {
                 result = new Response(0, -1, "Error - failed quality check for Queen Range");
             }
@@ -94,22 +94,29 @@
             return result;
         }
 
-        public Response ValidateAndAdd(ProductFormData data)
+        public Response ValidateAndAdd(ProductFormData productData)
         {
-            var range = CalculateRange(data);
-            var response = Validate(data, range);
+            var data = EnrichData(productData);
+            var response = Validate(data);
             if (response.StatusCode != 0)
             {
                 return response;
             }
-            
-            return new Response(_db.storeProduct(CreateProduct(data, range)), 0, "Product Successfully Added");
+
+            return new Response(_db.storeProduct(CreateProduct(data)), 0, "Product Successfully Added");
         }
 
-        private static Product CreateProduct(ProductFormData data, ProductRange range)
+        private static EnrichedProductFormData EnrichData(ProductFormData productData)
+        {
+            var result = new EnrichedProductFormData(productData);
+            result.Range = CalculateRange(productData);
+            return result;
+        }
+
+        private static Product CreateProduct(EnrichedProductFormData data)
         {
             var result = new Product(data.Name);
-            result.Range = range;
+            result.Range = data.Range;
             result.Weight = (data.Weight);
 
             if ("Eyeshadow" == (data.Type) || "Mascara" == (data.Type))
