@@ -228,6 +228,18 @@ namespace Validation
         }
 
         [Fact]
+        void Lipgloss_with_price_greater_than_10_produces_error()
+        {
+            var price = 10 + 1;
+
+            var db = new FakeDatabase();
+            var actual = CreateSut(db).ValidateAndAdd(CreateLipglossData(suggestedPrice: price));
+
+            var expected = CreateFailedQualityCheckResponse();
+            Assert.Equal(expected.ToString(), actual.ToString());
+        }
+
+        [Fact]
         void ValidateAndAdd() {
             // Arrange
             var productData = new ProductFormData("Sample product",
@@ -311,6 +323,11 @@ namespace Validation
         private static ProductFormData CreateBlusherData(double? weight = null)
         {
             return CreateData(type: "Blusher", weight: weight);
+        }
+
+        private static ProductFormData CreateLipglossData(double? weight = null, double? suggestedPrice = null)
+        {
+            return CreateData(type: "Lipgloss", weight: weight, suggestedPrice: suggestedPrice);
         }
 
         private static Response CreateFailedQualityCheckResponse()

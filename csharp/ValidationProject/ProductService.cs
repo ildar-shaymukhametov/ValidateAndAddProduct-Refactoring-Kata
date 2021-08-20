@@ -90,6 +90,13 @@
                     result = (ProductRange.QUEEN);
                 }
             }
+            else if ("Lipgloss" == (productData.Type))
+            {
+                if (productData.SuggestedPrice > 10)
+                {
+                    result = (ProductRange.QUEEN);
+                }
+            }
 
             return result;
         }
