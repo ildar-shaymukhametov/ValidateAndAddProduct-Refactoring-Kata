@@ -118,16 +118,15 @@
             var result = new Product(data.Name);
             result.Range = data.Range;
             result.Weight = (data.Weight);
+            result.Type = (data.Type);
 
             if ("Eyeshadow" == (data.Type) || "Mascara" == (data.Type))
             {
-                result.Type = (data.Type);
                 result.Family = (ProductFamily.EYES);
             }
 
             if ("Lipstick" == (data.Type))
             {
-                result.Type = (data.Type);
                 result.Family = (ProductFamily.LIPS);
             }
 
@@ -138,7 +137,6 @@
 
             if ("Blusher" == (data.Type) || "Foundation" == (data.Type))
             {
-                result.Type = (data.Type);
                 result.Family = (ProductFamily.SKIN);
             }
 
