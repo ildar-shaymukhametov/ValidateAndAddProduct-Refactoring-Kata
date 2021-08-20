@@ -8,6 +8,7 @@ namespace Validation
     internal class ProductService
     {
         private readonly List<Func<EnrichedProductFormData, Response>> _validators;
+        private readonly List<Func<ProductFormData, ProductRange?>> _rangeCalculators;
         private readonly IDatabaseAccess _db;
 
         public ProductService(IDatabaseAccess db)
@@ -23,6 +24,16 @@ namespace Validation
                 new Validator(x => "Unknown" == (x.Type) ? new Response(0, -1, "Unknown product type " + x.Type) : null),
                 new Validator(x => !x.PackagingRecyclable && x.Range == ProductRange.QUEEN ? new Response(0, -1, "Error - failed quality check for Queen Range") : null),
             };
+            _rangeCalculators = new List<Func<ProductFormData, ProductRange?>>
+            {
+                new Func<ProductFormData, ProductRange?>(x => nameof(Eyeshadow) == (x.Type) && x.Name.Contains("Queen") ? ProductRange.QUEEN : null),
+                new Func<ProductFormData, ProductRange?>(x => nameof(Foundation) == (x.Type) && x.SuggestedPrice > 10 ? ProductRange.PROFESSIONAL : null),
+                new Func<ProductFormData, ProductRange?>(x => nameof(Lipstick) == (x.Type) && x.SuggestedPrice > 10 ? ProductRange.PROFESSIONAL : null),
+                new Func<ProductFormData, ProductRange?>(x => nameof(Lipstick) == (x.Type) && x.SuggestedPrice > 20 ? ProductRange.QUEEN : null),
+                new Func<ProductFormData, ProductRange?>(x => nameof(Mascara) == (x.Type) && x.SuggestedPrice > 15 && !x.PackagingRecyclable ? ProductRange.PROFESSIONAL : null),
+                new Func<ProductFormData, ProductRange?>(x => nameof(Mascara) == (x.Type) && x.SuggestedPrice > 25 && x.PackagingRecyclable ? ProductRange.QUEEN : null),
+                new Func<ProductFormData, ProductRange?>(x => x.PackagingRecyclable ? ProductRange.PROFESSIONAL : null),
+            };
         }
 
         private Response Validate(EnrichedProductFormData data)
@@ -34,48 +45,15 @@ namespace Validation
             });
         }
 
-        private static ProductRange CalculateRange(ProductFormData productData)
+        private ProductRange CalculateRange(ProductFormData productData)
         {
-            var result = ProductRange.BUDGET;
-            if (productData.PackagingRecyclable)
+            var result = _rangeCalculators.Aggregate(default(ProductRange?), (acc, v) =>
             {
-                result = (ProductRange.PROFESSIONAL);
-            }
+                acc = acc ?? v(productData);
+                return acc;
+            });
 
-            if (nameof(Eyeshadow) == (productData.Type) && productData.Name.Contains("Queen"))
-            {
-                result = (ProductRange.QUEEN);
-            }
-            else if (nameof(Foundation) == (productData.Type) && productData.SuggestedPrice > 10)
-            {
-                result = (ProductRange.PROFESSIONAL);
-            }
-            else if (nameof(Lipstick) == (productData.Type))
-            {
-                if (productData.SuggestedPrice > 10)
-                {
-                    result = (ProductRange.PROFESSIONAL);
-                }
-
-                if (productData.SuggestedPrice > 20)
-                {
-                    result = (ProductRange.QUEEN);
-                }
-            }
-            else if (nameof(Mascara) == (productData.Type))
-            {
-                if (productData.SuggestedPrice > 15)
-                {
-                    result = (ProductRange.PROFESSIONAL);
-                }
-
-                if (productData.SuggestedPrice > 25 && productData.PackagingRecyclable)
-                {
-                    result = (ProductRange.QUEEN);
-                }
-            }
-
-            return result;
+            return result ?? ProductRange.BUDGET;
         }
 
         public Response ValidateAndAdd(ProductFormData productData)
@@ -90,7 +68,7 @@ namespace Validation
             return new Response(_db.storeProduct(CreateProduct(data)), 0, "Product Successfully Added");
         }
 
-        private static EnrichedProductFormData EnrichData(ProductFormData productData)
+        private EnrichedProductFormData EnrichData(ProductFormData productData)
         {
             var result = new EnrichedProductFormData(productData);
             result.Range = CalculateRange(productData);
