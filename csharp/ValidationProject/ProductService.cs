@@ -51,10 +51,6 @@
         private static ProductRange CalculateRange(ProductFormData productData)
         {
             var result = ProductRange.BUDGET;
-            if (productData.PackagingRecyclable)
-            {
-                result = (ProductRange.PROFESSIONAL);
-            }
 
             if ("Eyeshadow" == (productData.Type) && productData.Name.Contains("Queen"))
             {
@@ -94,6 +90,10 @@
                 {
                     result = (ProductRange.QUEEN);
                 }
+            }
+            else if (productData.PackagingRecyclable)
+            {
+                result = (ProductRange.PROFESSIONAL);
             }
 
             return result;
