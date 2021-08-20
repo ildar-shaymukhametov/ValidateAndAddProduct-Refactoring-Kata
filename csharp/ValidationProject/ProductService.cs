@@ -9,107 +9,143 @@
             _db = db;
         }
 
-        public Response ValidateAndAdd(ProductFormData productData)
+        private static Response Validate(EnrichedProductFormData data)
         {
-            if ("" == (productData.Name))
+            var result = new Response(0, 0, null);
+            if ("" == (data.Name))
             {
-                return new Response(0, -2, "Missing Name");
+                result = new Response(0, -2, "Missing Name");
+            }
+            else if ("" == (data.Type))
+            {
+                result = new Response(0, -2, "Missing Type");
+            }
+            else if ("Lipstick" == data.Type && data.SuggestedPrice > 20 && data.Weight > 0 && data.Weight < 10)
+            {
+                result = new Response(0, -1, "Error - failed quality check for Queen Range");
+            }
+            else if (data.Weight < 0)
+            {
+                result = new Response(0, -3, "Weight error");
+            }
+            else if ("Blusher" == (data.Type) && data.Weight > 10)
+            {
+                result = new Response(0, -3, "Error - weight too high");
+            }
+            else if ("Lipgloss" == (data.Type) && data.Weight > 20)
+            {
+                result = new Response(0, -3, "Error - weight too high");
+            }
+            else if ("Unknown" == (data.Type))
+            {
+                result = new Response(0, -1, "Unknown product type " + data.Type);
+            }
+            else if (!data.PackagingRecyclable && data.Range == ProductRange.QUEEN)
+            {
+                result = new Response(0, -1, "Error - failed quality check for Queen Range");
             }
 
-            if ("" == (productData.Type))
+            return result;
+        }
+
+        private static ProductRange CalculateRange(ProductFormData productData)
+        {
+            var result = ProductRange.BUDGET;
+
+            if ("Eyeshadow" == (productData.Type) && productData.Name.Contains("Queen"))
             {
-                return new Response(0, -2, "Missing Type");
+                result = (ProductRange.QUEEN);
             }
-
-            Product product = new Product(productData.Name);
-            product.Type = ("Unknown");
-
-            if ("Eyeshadow" == (productData.Type) || "Mascara" == (productData.Type))
+            else if ("Foundation" == (productData.Type) && productData.SuggestedPrice > 10)
             {
-                product.Type = (productData.Type);
-                product.Family = (ProductFamily.EYES);
-                if ("Eyeshadow" == (productData.Type) && product.Name.Contains("Queen"))
-                {
-                    product.Range = (ProductRange.QUEEN);
-                }
+                result = (ProductRange.PROFESSIONAL);
             }
-
-            product.Range = (ProductRange.BUDGET);
-            if (productData.PackagingRecyclable)
-            {
-                product.Range = (ProductRange.PROFESSIONAL);
-            }
-
-            if ("Foundation" == (productData.Type))
+            else if ("Lipstick" == (productData.Type))
             {
                 if (productData.SuggestedPrice > 10)
                 {
-                    product.Range = (ProductRange.PROFESSIONAL);
-                }
-            }
-
-            if ("Lipstick" == (productData.Type))
-            {
-                product.Type = (productData.Type);
-                product.Family = (ProductFamily.LIPS);
-                if (productData.SuggestedPrice > 10)
-                {
-                    product.Range = (ProductRange.PROFESSIONAL);
+                    result = (ProductRange.PROFESSIONAL);
                 }
 
                 if (productData.SuggestedPrice > 20)
                 {
-                    if (productData.Weight > 0 && productData.Weight < 10)
-                    {
-                        return new Response(0, -1, "Error - failed quality check for Queen Range");
-                    }
-
-                    product.Range = (ProductRange.QUEEN);
+                    result = (ProductRange.QUEEN);
                 }
             }
-
-            if ("Mascara" == (productData.Type))
+            else if ("Mascara" == (productData.Type))
             {
-                product.Family = (ProductFamily.LASHES);
                 if (productData.SuggestedPrice > 15)
                 {
-                    product.Range = (ProductRange.PROFESSIONAL);
+                    result = (ProductRange.PROFESSIONAL);
                 }
 
                 if (productData.SuggestedPrice > 25 && productData.PackagingRecyclable)
                 {
-                    product.Range = (ProductRange.QUEEN);
+                    result = (ProductRange.QUEEN);
                 }
             }
-
-            if (productData.Weight < 0)
+            else if ("Lipgloss" == (productData.Type))
             {
-                return new Response(0, -3, "Weight error");
-            }
-
-            product.Weight = (productData.Weight);
-
-            if ("Blusher" == (productData.Type) || "Foundation" == (productData.Type))
-            {
-                product.Type = (productData.Type);
-                product.Family = (ProductFamily.SKIN);
-                if ("Blusher" == (productData.Type) && productData.Weight > 10)
+                if (productData.SuggestedPrice > 10)
                 {
-                    return new Response(0, -3, "Error - weight too high");
+                    result = (ProductRange.QUEEN);
                 }
             }
-
-            if (!productData.PackagingRecyclable && product.Range == ProductRange.QUEEN)
+            else if (productData.PackagingRecyclable)
             {
-                return new Response(0, -1, "Error - failed quality check for Queen Range");
+                result = (ProductRange.PROFESSIONAL);
             }
 
-            if ("Unknown" == (product.Type))
+            return result;
+        }
+
+        public Response ValidateAndAdd(ProductFormData productData)
+        {
+            var data = EnrichData(productData);
+            var response = Validate(data);
+            if (response.StatusCode != 0)
             {
-                return new Response(0, -1, "Unknown product type " + productData.Type);
+                return response;
             }
 
-            return new Response(_db.storeProduct(product), 0, "Product Successfully Added");
+            return new Response(_db.storeProduct(CreateProduct(data)), 0, "Product Successfully Added");
+        }
+
+        private static EnrichedProductFormData EnrichData(ProductFormData productData)
+        {
+            var result = new EnrichedProductFormData(productData);
+            result.Range = CalculateRange(productData);
+            return result;
+        }
+
+        private static Product CreateProduct(EnrichedProductFormData data)
+        {
+            var result = new Product(data.Name);
+            result.Range = data.Range;
+            result.Weight = (data.Weight);
+            result.Type = (data.Type);
+
+            if ("Eyeshadow" == (data.Type) || "Mascara" == (data.Type))
+            {
+                result.Family = (ProductFamily.EYES);
+            }
+
+            if ("Lipstick" == (data.Type) || "Lipgloss" == data.Type)
+            {
+                result.Family = (ProductFamily.LIPS);
+            }
+
+            if ("Mascara" == (data.Type))
+            {
+                result.Family = (ProductFamily.LASHES);
+            }
+
+            if ("Blusher" == (data.Type) || "Foundation" == (data.Type))
+            {
+                result.Family = (ProductFamily.SKIN);
+            }
+
+            return result;
         }
     }
 }
